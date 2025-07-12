@@ -1,0 +1,54 @@
+name: Auto-Grading Checks
+
+on:
+  push:
+    branches: [ main, phase-* ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-phase-1:
+    if: contains(github.ref, 'phase-1') || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: HTML Validation
+      run: |
+        npm install -g html5-validator
+        html5-validator phase-1-foundation/*.html
+    
+    - name: CSS Validation
+      run: |
+        npm install -g css-validator
+        css-validator phase-1-foundation/css/*.css
+    
+    - name: Check File Structure
+      run: |
+        test -f phase-1-foundation/index.html
+        test -f phase-1-foundation/css/styles.css
+        test -f phase-1-foundation/js/main.js
+
+  test-phase-2:
+    if: contains(github.ref, 'phase-2') || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install Dependencies
+      run: |
+        cd phase-2-frontend
+        npm install
+    
+    - name: Build Project
+      run: |
+        cd phase-2-frontend
+        npm run build
+    
+    - name: Run Tests
+      run: |
+        cd phase-2-frontend
+        npm test
